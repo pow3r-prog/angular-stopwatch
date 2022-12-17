@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { Observable, Subscription, timer } from 'rxjs';
+import { Observable, Subscription, timer, of, delay, tap } from 'rxjs';
 
 @Component({
   selector: 'stopwatch',
@@ -12,7 +12,7 @@ export class StopwatchComponent {
   started: boolean = false;
   startBtn: string = 'Start';
   clickCount: number = 0;
-  interval: string | number | NodeJS.Timeout | undefined;
+  // interval: string | number | NodeJS.Timeout | undefined; // it`s variable for no rxjs approach
   timer: Observable<number> = timer(1000, 1000);
   subscription: Subscription | undefined;
   time = new Date(0);
@@ -36,16 +36,21 @@ export class StopwatchComponent {
 
   onWaitHandler() {
     this.clickCount++;
-    setTimeout(() => {
-      if (this.clickCount === 1) {
-        alert('please make double click button for pause timer');
-      } else if (this.clickCount === 2 && this.time.getSeconds() >= 1) {
-        this.subscription?.unsubscribe();
-        this.started = !this.started;
-        this.startBtn = 'Start';
-      }
-      this.clickCount = 0;
-    }, 500);
+    of(true)
+      .pipe(
+        delay(500),
+        tap(() => {
+          if (this.clickCount === 1) {
+            alert('please make double click button for pause timer');
+          } else if (this.clickCount === 2 && this.time.getSeconds() >= 1) {
+            this.subscription?.unsubscribe();
+            this.started = !this.started;
+            this.startBtn = 'Start';
+          }
+          this.clickCount = 0;
+        })
+      )
+      .subscribe();
   }
 
   // bellow without rxjs & Observable but works to
